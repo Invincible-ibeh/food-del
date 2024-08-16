@@ -40,7 +40,7 @@ const placeOrder = async (req, res) => {
                 },
                 unit_amount:2*100
             },
-            quantit:1
+            quantity:1
         })
         
         const session = await stripe.checkout.sessions.create({
@@ -56,5 +56,21 @@ const placeOrder = async (req, res) => {
         
     }
 }
+const verifyOrder = async (req, res) => {
+    const { orderId, success } = req.body;
+    try {
+        if (success == "true") {
+            await orderModel.findByIdAndUpdate(orderId, { payment: true });
+            res.json({ success: true, message: "Paid" });
+        }
+        else {
+            await orderModel.findByIdAndDelete(orderId);
+            res.json({ success: false, message: "Not Paid" })
+        }
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Error" })
+    }
+}
 
-export {placeOrder}
+export {placeOrder, verifyOrder}
